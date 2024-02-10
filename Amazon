@@ -1,0 +1,142 @@
+# import libraries
+
+from bs4 import BeautifulSoup
+import requests
+import time
+import datetime
+
+import smtplib
+
+# Connect to the website
+
+URL = "https://www.amazon.com/dp/B0CNK1K952/ref=sspa_dk_detail_1?psc=1&pd_rd_i=B0CNK1K952&pd_rd_w=un6gJ&content-id=amzn1.sym.a53ea610-e450-44d1-897e-68c0c718bf50&pf_rd_p=a53ea610-e450-44d1-897e-68c0c718bf50&pf_rd_r=QHBB2TQCSCBDSQVWMB7W&pd_rd_wg=bW2oq&pd_rd_r=e93eb084-260a-4aaf-9367-a84c29e49227&s=apparel&sp_csd=d2lkZ2V0TmFtZT1zcF9kZXRhaWxfdGhlbWF0aWM"
+# access the user agent for yor specific computer using this link https://httpbin.org/get
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0","Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
+
+page = requests.get(URL, headers=headers)
+
+soup1 = BeautifulSoup(page.content, "html.parser")
+
+soup2 = BeautifulSoup(soup1.prettify(), 'html.parser')
+
+# table = soup2.find_all("td", {"class": "aok-offscreen"})
+price = soup2.find(id='acrPopover').get_text()
+
+title = soup2.find(id='productTitle').get_text()
+
+# price = table.find_all('0123456789$,').get_text()
+#chars = set('0123456789$,')
+#if any((c in chars) for '$' in table):
+#   print('Found')
+#else:
+#   print('Not Found')
+# trs = table[0].findAll("tr")
+
+print(title)
+print(price)
+#print(table)
+
+# Code to srip the space from the front and back of the price and the [1:] takes only details from the second value(number) to the last
+# remove space frm the front and back of the title.
+
+title = title.strip()
+price = price.strip()
+
+print(title)
+print(price)
+
+# Try to add some date or time stamp to show when you collected the data
+
+import datetime
+
+today = datetime.date.today()
+print(today)
+
+import csv
+
+header = ['Title', 'Price', 'Date']
+data = [title, price, today]
+
+
+
+# Creating a CSV 
+# w means write request.
+with open('AmazonWebScraperDataset.csv', 'w', newline='', encoding='UTF8') as f:
+    writer = csv.writer(f) # Creating a CSV file 
+    writer.writerow(header) # Creating the header of the CSV file
+    writer.writerow(data) # inputing data within the CSV file
+
+import pandas as pd
+
+df = pd.read_csv(r'C:\Users\HP-ENVY\Desktop\Coding folder\AmazonWebScraperDataset.csv')
+print(df)
+
+# The A+ is used to append data to the created csv file
+
+with open('AmazonWebScraperDataset.csv', 'a+', newline='', encoding='UTF8') as f:
+    writer = csv.writer(f) # appending a CSV file 
+    writer.writerow(data) # inputing data within the CSV file
+
+
+def check_price():
+    # Connect to the website
+
+    URL = "https://www.amazon.com/dp/B0CNK1K952/ref=sspa_dk_detail_1?psc=1&pd_rd_i=B0CNK1K952&pd_rd_w=un6gJ&content-id=amzn1.sym.a53ea610-e450-44d1-897e-68c0c718bf50&pf_rd_p=a53ea610-e450-44d1-897e-68c0c718bf50&pf_rd_r=QHBB2TQCSCBDSQVWMB7W&pd_rd_wg=bW2oq&pd_rd_r=e93eb084-260a-4aaf-9367-a84c29e49227&s=apparel&sp_csd=d2lkZ2V0TmFtZT1zcF9kZXRhaWxfdGhlbWF0aWM"
+    # access the user agent for yor specific computer using this link https://httpbin.org/get
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0","Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
+
+    page = requests.get(URL, headers=headers)
+
+    soup1 = BeautifulSoup(page.content, "html.parser")
+
+    soup2 = BeautifulSoup(soup1.prettify(), 'html.parser')
+
+    # table = soup2.find_all("td", {"class": "aok-offscreen"})
+    price = soup2.find(id='acrPopover').get_text()
+
+    title = soup2.find(id='productTitle').get_text()
+
+    title = title.strip()
+    price = price.strip()
+
+    import datetime
+
+    today = datetime.date.today()
+
+    import csv
+
+    header = ['Title', 'Price', 'Date']
+    data = [title, price, today]
+
+    with open('AmazonWebScraperDataset.csv', 'a+', newline='', encoding='UTF8') as f:
+        writer = csv.writer(f) # appending a CSV file 
+        writer.writerow(data) # inputing data within the CSV file
+        
+    if(price < 14):
+        send_mail()
+
+# Adding a timer for it to run continuously
+
+while(True):
+    check_price()
+    time.sleep(6400) 
+
+# Define the send me function called above
+def send_mail():
+    server = smtplip.SMTP_SSL('smtp.gmail.com',465)
+    server.ehlo() # gmail server
+    # Server.starttls()
+    server.ehlo()
+    server.login('xxxxxxxxxxxxxxxxxx','xxxxxxxxxx') #Input your email and password here
+    
+    subject= "The Amazon Price is low enough! Buy it now"
+    body = "Uyoyou, This is the time we have ben waiting for to make it big. get the money and buy it now"
+    
+    msg = f"Subject: {sunject}\n\n{body}"
+    
+    server.sendmail(
+        'xxxxxxxxxxxxxxxxxx' #Input your email
+        msg
+    
+    )
+
